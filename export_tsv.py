@@ -13,8 +13,6 @@ def main():
     pages = data.get("pages", [])
 
     with open(output_path, "w", encoding="utf-8") as out:
-        # ヘッダー
-        out.write("id\ttitle\tlines\turl\n")
         for page in pages:
             title = str(page.get("title", ""))
             if not title.startswith("Q:"):
