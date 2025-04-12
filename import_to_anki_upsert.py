@@ -110,7 +110,7 @@ def main():
     no_change_count = 0 # 変更なしでスキップした件数
 
     try:
-        with open("dist/output.tsv", encoding="utf-8") as f:
+        with open("build/output.tsv", encoding="utf-8") as f:
             reader = csv.reader(f, delimiter="\t")
             for row in reader:
                 if len(row) != 5:

@@ -3,8 +3,8 @@ import sys
 import urllib.parse
 
 def main():
-    input_path = "dist/input.json"
-    output_path = "dist/output.tsv"
+    input_path = "build/input.json"
+    output_path = "build/output.tsv"
 
     with open(input_path, encoding="utf-8") as f:
         data = json.load(f)
