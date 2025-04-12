@@ -21,7 +21,7 @@ ScrapboxのQ&Aページ（タイトルが`Q:`で始まるページ）をAnkiに�
 
 2. **環境変数を設定**
    - `SCRAPBOX_PROJECT`  
-     - 対象Scrapboxプロジェクト名（例: `help-jp` は `https://scrapbox.io/help-jp/` の「help-jp」部分）
+     - 対象Scrapboxプロジェクト名（例: `https://scrapbox.io/help-jp/` の「help-jp」の部分を指定）
    - `SCRAPBOX_SESSION_ID`  
      - Scrapboxの全ページデータをダウンロードするために必要
      - **取得方法:**
