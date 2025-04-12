@@ -16,3 +16,11 @@ input.json:
 		exit 1; \
 	fi; \
 	curl -s -H "Cookie: connect.sid=$$SCRAPBOX_SESSION_ID" "https://scrapbox.io/api/page-data/export/$$SCRAPBOX_PROJECT.json" -o input.json
+
+.PHONY: import
+import:
+	@if [ ! -f output.tsv ]; then \
+		touch output.tsv; \
+		echo "output.tsv がなかったので空ファイルを作成しました。"; \
+	fi
+	python3 import_to_anki_upsert.py
