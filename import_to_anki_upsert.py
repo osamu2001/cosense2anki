@@ -2,9 +2,12 @@ import csv
 import requests
 import sys
 import json
+import os
 # import time # 不要になった
 
 ANKI_CONNECT_URL = "http://localhost:8765"
+
+DECK_NAME = os.environ.get("SCRAPBOX_DECK", "QA on scrapbox")
 
 def find_note_ids(field_id):
     payload = {
@@ -85,7 +88,7 @@ def add_note(fields, tags):
         "action": "addNotes",
         "version": 6,
         "params": {"notes": [{
-            "deckName": "QA on scrapbox",
+            "deckName": DECK_NAME,
             "modelName": "QA on scrapbox",
             "fields": fields, # addNotesではtagsフィールドもそのまま渡す
             "tags": tags
