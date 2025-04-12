@@ -41,6 +41,7 @@ ScrapboxのQ&Aページ（タイトルが`Q:`で始まるページ）をAnkiに�
 - デフォルトのデッキ名は `"QA on scrapbox"`  
   変更したい場合は `SCRAPBOX_DECK` を設定
 
+
 ## トラブルシューティング
 
 - **input.jsonがダウンロードできない場合**
@@ -61,3 +62,12 @@ ScrapboxのQ&Aページ（タイトルが`Q:`で始まるページ）をAnkiに�
 - Pythonの追加モジュールや特別なセットアップは不要です
 - apkgファイルは `resources/QAonScrapbox.apkg` に同梱されています
 - ノートタイプやテンプレートの詳細はapkgを参照してください
+- AnkiConnectを使わずにAnkiアプリから手作業で「ファイルをインポート」（build/output.tsvを指定）することも可能です**
+
+### 中間生成ファイルについて
+
+- `build/` ディレクトリ配下には一時的な中間生成ファイルが作成されます。
+    - `build/input.json` … Scrapboxからダウンロードした全ページデータ（make時に自動生成され、再利用・削除可）
+    - `build/output.tsv` … Ankiインポート用に整形されたTSVファイル（make時に自動生成され、再利用・削除可）
+    - `build/.imported` … インポート済みの印ファイル（makeの冪等性管理用、不要なら削除可）
+- これらのファイルは何度でも再生成できるため、不要になった場合は削除して問題ありません。
