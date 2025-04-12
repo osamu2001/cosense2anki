@@ -1,4 +1,4 @@
-.PHONY: all clean tsv
+.PHONY: all clean
 
 all: output.tsv
 
