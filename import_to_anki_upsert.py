@@ -2,10 +2,9 @@ import csv
 import requests
 import sys
 import json
-import time # デバッグ用に追記したが不要になった
+# import time # 不要になった
 
 ANKI_CONNECT_URL = "http://localhost:8765"
-# TARGET_ID = "67f9f89cdffb412a3f635c0e" # デバッグ対象のID指定を解除
 
 def find_note_ids(field_id):
     payload = {
@@ -33,7 +32,6 @@ def get_notes_info(note_ids):
         r = requests.post(ANKI_CONNECT_URL, json=payload)
         r.raise_for_status()
         res = r.json()
-        # デバッグ用にnotesInfoのレスポンスも表示していたがコメントアウト
         # print(f"[get_notes_info] response: {json.dumps(res, ensure_ascii=False)}", file=sys.stderr)
         return res["result"]
     except Exception as e:
@@ -41,26 +39,17 @@ def get_notes_info(note_ids):
         return []
 
 def update_note(note_id, fields):
-    # tagsはupdateNoteFieldsでは更新できないので除外
     fields_for_update = {k: v for k, v in fields.items() if k != "tags"}
-
-    # --- デバッグ用: linesフィールドに強制的に追記していた処理を削除 ---
-    # if "lines" in fields_for_update:
-    #     fields_for_update["lines"] += f"_updated_{int(time.time())}"
-    # --- デバッグ用ここまで ---
-
     payload = {
         "action": "updateNoteFields",
         "version": 6,
         "params": {"note": {"id": note_id, "fields": fields_for_update}}
     }
     try:
-        # デバッグ用のpayload表示もコメントアウト
         # print(f"[update_note] payload: {json.dumps(payload, ensure_ascii=False)}", file=sys.stderr)
         r = requests.post(ANKI_CONNECT_URL, json=payload)
         r.raise_for_status()
         res = r.json()
-        # デバッグ用のresponse表示もコメントアウト
         # print(f"[update_note] response: {json.dumps(res, ensure_ascii=False)}", file=sys.stderr)
         if res.get("error"):
             print(f"[update_note] Error updating note {note_id}: {res['error']}", file=sys.stderr)
@@ -79,12 +68,10 @@ def update_note_tags(note_id, tags):
         }
     }
     try:
-        # デバッグ用のpayload表示もコメントアウト
         # print(f"[update_note_tags] payload: {json.dumps(payload, ensure_ascii=False)}", file=sys.stderr)
         r = requests.post(ANKI_CONNECT_URL, json=payload)
         r.raise_for_status()
         res = r.json()
-        # デバッグ用のresponse表示もコメントアウト
         # print(f"[update_note_tags] response: {json.dumps(res, ensure_ascii=False)}", file=sys.stderr)
         if res.get("error"):
             print(f"[update_note_tags] Error updating tags for note {note_id}: {res['error']}", file=sys.stderr)
@@ -100,7 +87,7 @@ def add_note(fields, tags):
         "params": {"notes": [{
             "deckName": "QA on scrapbox",
             "modelName": "QA on scrapbox",
-            "fields": fields,
+            "fields": fields, # addNotesではtagsフィールドもそのまま渡す
             "tags": tags
         }]}
     }
@@ -120,7 +107,7 @@ def main():
     added_count = 0
     skipped_count = 0
     error_count = 0
-    # found_target = False # 対象IDが見つかったかどうかのフラグも不要に
+    no_change_count = 0 # 変更なしでスキップした件数
 
     try:
         with open("output.tsv", encoding="utf-8") as f:
@@ -132,62 +119,90 @@ def main():
                     continue
                 id_, title, lines, url, tags_str = row
 
-                # --- デバッグ用: 特定IDのみ処理していた箇所を削除 ---
-                # if TARGET_ID and id_ != TARGET_ID:
-                #     continue
-                # found_target = True # 対象IDが見つかった
-                # --- デバッグ用ここまで ---
-
-                fields = {
+                # TSVからのデータ
+                tsv_fields = {
                     "id": id_,
                     "title": title,
                     "lines": lines,
                     "url": url,
-                    "tags": tags_str # tagsフィールドも一旦保持
+                    # "tags" は比較用には不要
                 }
-                tags = tags_str.split() if tags_str else []
+                tsv_tags = sorted(tags_str.split()) if tags_str else [] # 比較用にソート
+
                 note_ids = find_note_ids(id_)
                 if note_ids:
                     notes_info = get_notes_info(note_ids)
                     if notes_info:
-                        note_id = notes_info[0]["noteId"]
-                        # update_note には tags を含まない fields を渡す
-                        res = update_note(note_id, fields)
-                        tags_res = update_note_tags(note_id, tags)
-                        if (res and not res.get("error")) and (tags_res and not tags_res.get("error")):
-                            updated_count += 1
+                        note_info = notes_info[0]
+                        note_id = note_info["noteId"]
+
+                        # Anki上の既存データ
+                        anki_fields = {k: v["value"] for k, v in note_info["fields"].items() if k != "tags"}
+                        anki_tags = sorted(note_info["tags"]) # 比較用にソート
+
+                        # フィールド内容の比較 (tagsを除く)
+                        fields_changed = False
+                        for field_name, tsv_value in tsv_fields.items():
+                            if field_name in anki_fields and anki_fields[field_name] != tsv_value:
+                                fields_changed = True
+                                break
+                            elif field_name not in anki_fields: # Anki側にフィールドがない場合も変更とみなす
+                                fields_changed = True
+                                break
+
+                        # タグ内容の比較 (順序無視)
+                        tags_changed = (anki_tags != tsv_tags)
+
+                        # 変更がある場合のみ更新APIを呼び出す
+                        if fields_changed or tags_changed:
+                            print(f"Updating note: {id_} (Fields changed: {fields_changed}, Tags changed: {tags_changed})")
+                            res = None
+                            tags_res = None
+                            if fields_changed:
+                                # update_note には tags を含まない fields を渡す
+                                res = update_note(note_id, {"id": id_, "title": title, "lines": lines, "url": url})
+                            if tags_changed:
+                                tags_res = update_note_tags(note_id, tsv_tags) # tsv_tagsはソート済みリスト
+
+                            # API呼び出し結果を確認
+                            update_successful = True
+                            if fields_changed and (not res or res.get("error")):
+                                update_successful = False
+                            if tags_changed and (not tags_res or tags_res.get("error")):
+                                update_successful = False
+
+                            if update_successful:
+                                updated_count += 1
+                            else:
+                                error_count += 1
                         else:
-                            # どちらかでエラーがあればエラーカウント
-                            error_count += 1
-                        # print(f"Updated: {id_}") # 逐次表示もコメントアウト（サマリーで表示するため）
+                            print(f"Skipped (no change): {id_}")
+                            no_change_count += 1
                     else:
                         print(f"[main] No notesInfo found for id={id_}, skipping update.", file=sys.stderr)
                         skipped_count += 1
                 else:
-                    # add_note には tags を含む fields を渡す
-                    res = add_note(fields, tags)
+                    # 新規追加
+                    print(f"Adding new note: {id_}")
+                    # add_note には tags フィールドを含む元の fields と tags リストを渡す
+                    add_fields = {
+                        "id": id_, "title": title, "lines": lines, "url": url, "tags": tags_str
+                    }
+                    res = add_note(add_fields, tsv_tags) # tsv_tagsはソート済みリスト
                     if res and not res.get("error"):
                         added_count += 1
                     else:
                         error_count += 1
-                    # print(f"Added: {id_}") # 逐次表示もコメントアウト
-
-                # 対象IDが見つかったらループを抜ける処理も削除
-                # if found_target:
-                #     break
 
     except Exception as e:
         print(f"[main] Exception: {e}", file=sys.stderr)
         error_count += 1
 
-    # 対象IDが見つからなかった場合のメッセージも削除
-    # if TARGET_ID and not found_target:
-    #     print(f"[main] Target ID {TARGET_ID} not found in output.tsv", file=sys.stderr)
-
     print("\n=== Import Summary ===")
     print(f"Updated: {updated_count}件")
     print(f"Added:   {added_count}件")
-    print(f"Skipped: {skipped_count}件")
+    print(f"Skipped (no change): {no_change_count}件")
+    print(f"Skipped (invalid row): {skipped_count}件")
     print(f"Error:   {error_count}件")
 
 if __name__ == "__main__":
