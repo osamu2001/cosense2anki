@@ -16,8 +16,10 @@ def main():
         # ヘッダー
         out.write("id\ttitle\tlines\turl\n")
         for page in pages:
-            page_id = str(page.get("id", ""))
             title = str(page.get("title", ""))
+            if not title.startswith("Q:"):
+                continue
+            page_id = str(page.get("id", ""))
             # lines: 先頭がtitleと同じなら除外し、<br>で連結。タブや改行をエスケープ
             lines = page.get("lines", [])
             if lines and lines[0] == title:
