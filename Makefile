@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: import
+all: build/.imported
 
 build/output.tsv: build/input.json export_tsv.py
 	python3 export_tsv.py
@@ -17,8 +17,6 @@ build/input.json:
 		exit 1; \
 	fi; \
 	curl -s -H "Cookie: connect.sid=$$SCRAPBOX_SESSION_ID" "https://scrapbox.io/api/page-data/export/$$SCRAPBOX_PROJECT.json" -o build/input.json
-
-import: build/.imported
 
 build/.imported: build/output.tsv import_to_anki_upsert.py
 	python3 import_to_anki_upsert.py
