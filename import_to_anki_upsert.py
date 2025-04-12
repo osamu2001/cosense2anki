@@ -74,12 +74,17 @@ def add_note(fields, tags):
         return None
 
 def main():
+    updated_count = 0
+    added_count = 0
+    skipped_count = 0
+    error_count = 0
     try:
         with open("output.tsv", encoding="utf-8") as f:
             reader = csv.reader(f, delimiter="\t")
             for row in reader:
                 if len(row) != 5:
                     print(f"[main] Skipped row (invalid column count): {row}", file=sys.stderr)
+                    skipped_count += 1
                     continue
                 id_, title, lines, url, tags_str = row
                 fields = {
@@ -95,15 +100,31 @@ def main():
                     notes_info = get_notes_info(note_ids)
                     if notes_info:
                         note_id = notes_info[0]["noteId"]
-                        update_note(note_id, fields)
+                        res = update_note(note_id, fields)
+                        if res and not res.get("error"):
+                            updated_count += 1
+                        else:
+                            error_count += 1
                         print(f"Updated: {id_}")
                     else:
                         print(f"[main] No notesInfo found for id={id_}, skipping update.", file=sys.stderr)
+                        skipped_count += 1
                 else:
-                    add_note(fields, tags)
+                    res = add_note(fields, tags)
+                    if res and not res.get("error"):
+                        added_count += 1
+                    else:
+                        error_count += 1
                     print(f"Added: {id_}")
     except Exception as e:
         print(f"[main] Exception: {e}", file=sys.stderr)
+        error_count += 1
+
+    print("\n=== Import Summary ===")
+    print(f"Updated: {updated_count}件")
+    print(f"Added:   {added_count}件")
+    print(f"Skipped: {skipped_count}件")
+    print(f"Error:   {error_count}件")
 
 if __name__ == "__main__":
     main()
