@@ -1,3 +1,2 @@
 # Scrapbox export
-input.json
-output.tsv
+dist/
