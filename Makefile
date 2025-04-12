@@ -15,4 +15,4 @@ input.json:
 		echo "    export SCRAPBOX_SESSION_ID=xxxx"; \
 		exit 1; \
 	fi; \
-	http https://scrapbox.io/api/page-data/export/$$SCRAPBOX_PROJECT.json Cookie:"connect.sid=$$SCRAPBOX_SESSION_ID" > input.json
+	curl -s -H "Cookie: connect.sid=$$SCRAPBOX_SESSION_ID" "https://scrapbox.io/api/page-data/export/$$SCRAPBOX_PROJECT.json" -o input.json
