@@ -37,7 +37,15 @@ def main():
             lines = page.get("lines", [])
             if lines and lines[0] == orig_title:
                 lines = lines[1:]
-            lines_joined = "<br>".join(line.replace("\t", " ").replace("\n", " ") for line in lines)
+            import re
+            def convert_gyazo(line):
+                # [https://gyazo.com/<id>] → <img src="https://i.gyazo.com/<id>.png">
+                def repl(m):
+                    gyazo_id = m.group(1)
+                    return f'<img src="https://i.gyazo.com/{gyazo_id}.png">'
+                # 正規表現で [https://gyazo.com/<id>] を検出
+                return re.sub(r'\[https://gyazo\.com/([a-zA-Z0-9]+)\]', repl, line.replace("\t", " ").replace("\n", " "))
+            lines_joined = "<br>".join(convert_gyazo(line) for line in lines)
             # url: https://scrapbox.io/{project}/{title}（titleはURLエンコード）
             url = f"https://scrapbox.io/{urllib.parse.quote(project)}/{urllib.parse.quote(orig_title)}"
             # TSV出力
