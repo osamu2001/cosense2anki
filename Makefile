@@ -5,12 +5,12 @@ all: build/.imported
 check-anki:
 	curl -s -X POST http://localhost:8765 -d '{"action":"version","version":6}'
 
-build/.imported: build/output.tsv import_to_anki_upsert.py
-	python3 import_to_anki_upsert.py
+build/.imported: build/output.tsv src/import_to_anki_upsert.py
+	python3 src/import_to_anki_upsert.py
 	touch build/.imported
 
-build/output.tsv: build/input.json export_tsv.py
-	python3 export_tsv.py
+build/output.tsv: build/input.json src/export_tsv.py
+	python3 src/export_tsv.py
 
 build/input.json:
 	@mkdir -p build

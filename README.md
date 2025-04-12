@@ -53,16 +53,17 @@ ScrapboxのQ&Aページ（タイトルが`Q:`で始まるページ）をAnkiに�
 
 - **AnkiConnectの接続確認**
   - `make check-anki` でAnkiConnectへの接続確認ができます
+  - または `python3 src/check_anki_connect.py` でも確認できます
   - 正常時の出力例:  
     `{"result": 6, "error": null}`
   - エラーや応答がない場合はAnki本体やAnkiConnectの起動・インストール状況を確認してください
 
 ## 備考
 
-- Pythonの追加モジュールや特別なセットアップは不要です
+- Pythonの追加モジュールとして `requests` が必要です（`pip install requests` でインストール）
 - apkgファイルは `resources/QAonScrapbox.apkg` に同梱されています
 - ノートタイプやテンプレートの詳細はapkgを参照してください
-- AnkiConnectを使わずにAnkiアプリから手作業で「ファイルをインポート」（build/output.tsvを指定）することも可能です**
+- 本来の使い方ではありませんが、AnkiConnectを使わずにAnkiアプリから手作業で「ファイルをインポート」（build/output.tsvを指定）することも可能です
 
 ### 中間生成ファイルについて
 
