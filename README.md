@@ -41,6 +41,21 @@ ScrapboxのQ&Aページ（タイトルが`Q:`で始まるページ）をAnkiに�
 - デフォルトのデッキ名は `"QA on scrapbox"`  
   変更したい場合は `SCRAPBOX_DECK` を設定
 
+## トラブルシューティング
+
+- **input.jsonがダウンロードできない場合**
+  - エラー例: `Error: SCRAPBOX_PROJECTとSCRAPBOX_SESSION_IDの環境変数を設定してください。` など
+  - 主な原因: `SCRAPBOX_SESSION_ID` が正しく設定されていない、または期限切れ・誤った値になっている可能性が高い
+  - 対策:
+    - Chromeのデベロッパーツールで `connect.sid` を再取得し、正しい値を環境変数に設定し直す
+    - Scrapboxに再ログインしてから取得し直すと確実
+
+- **AnkiConnectの接続確認**
+  - `make check-anki` でAnkiConnectへの接続確認ができます
+  - 正常時の出力例:  
+    `{"result": 6, "error": null}`
+  - エラーや応答がない場合はAnki本体やAnkiConnectの起動・インストール状況を確認してください
+
 ## 備考
 
 - Pythonの追加モジュールや特別なセットアップは不要です

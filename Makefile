@@ -1,6 +1,9 @@
-.PHONY: all clean
+.PHONY: all clean check-anki
 
 all: build/.imported
+
+check-anki:
+	curl -s -X POST http://localhost:8765 -d '{"action":"version","version":6}'
 
 build/.imported: build/output.tsv import_to_anki_upsert.py
 	python3 import_to_anki_upsert.py
