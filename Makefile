@@ -2,11 +2,12 @@
 
 all: build/.imported
 
+build/.imported: build/output.tsv import_to_anki_upsert.py
+	python3 import_to_anki_upsert.py
+	touch build/.imported
+
 build/output.tsv: build/input.json export_tsv.py
 	python3 export_tsv.py
-
-clean:
-	rm -rf build
 
 build/input.json:
 	@mkdir -p build
@@ -18,6 +19,5 @@ build/input.json:
 	fi; \
 	curl -s -H "Cookie: connect.sid=$$SCRAPBOX_SESSION_ID" "https://scrapbox.io/api/page-data/export/$$SCRAPBOX_PROJECT.json" -o build/input.json
 
-build/.imported: build/output.tsv import_to_anki_upsert.py
-	python3 import_to_anki_upsert.py
-	touch build/.imported
+clean:
+	rm -rf build
