@@ -18,8 +18,10 @@ def main():
         for page in pages:
             page_id = str(page.get("id", ""))
             title = str(page.get("title", ""))
-            # lines: <br>で連結し、タブや改行をエスケープ
+            # lines: 先頭がtitleと同じなら除外し、<br>で連結。タブや改行をエスケープ
             lines = page.get("lines", [])
+            if lines and lines[0] == title:
+                lines = lines[1:]
             lines_joined = "<br>".join(line.replace("\t", " ").replace("\n", " ") for line in lines)
             # url: https://scrapbox.io/{project}/{title}（titleはURLエンコード）
             url = f"https://scrapbox.io/{urllib.parse.quote(project)}/{urllib.parse.quote(title)}"
