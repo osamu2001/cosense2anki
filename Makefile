@@ -1,9 +1,12 @@
-.PHONY: all clean
+.PHONY: all clean tsv
 
-all: input.json
+all: output.tsv
+
+output.tsv: input.json export_tsv.py
+	python3 export_tsv.py
 
 clean:
-	rm -f input.json
+	rm -f input.json output.tsv
 
 input.json:
 	@if [ -z "$$SCRAPBOX_PROJECT" ] || [ -z "$$SCRAPBOX_SESSION_ID" ]; then \
