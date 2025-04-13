@@ -41,6 +41,15 @@ ScrapboxのQ&Aページ（タイトルが`Q:`で始まるページ）をAnkiに�
 - デフォルトのデッキ名は `"QA on scrapbox"`  
   変更したい場合は `SCRAPBOX_DECK` を設定
 
+### Scrapboxページデータ（input.json）を手動で用意する場合
+
+1. ブラウザで `https://scrapbox.io/projects/プロジェクト名/settings/page-data` にアクセスし、ページデータ（JSONファイル）をダウンロード
+2. ダウンロードしたファイルを `build/input.json` として配置
+3. `make` を実行
+
+- この方法を使う場合、`SCRAPBOX_PROJECT` や `SCRAPBOX_SESSION_ID` の環境変数は設定不要です。
+- どちらの方法でも `vault/` にノートが出力されます。
+
 
 ## トラブルシューティング
 
